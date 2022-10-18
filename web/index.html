@@ -1,25 +1,19 @@
+<!DOCTYPE html>
 <html>
   <head>
-    <script>
-      let HOST = location.origin.replace(/^http/, 'ws')
-      let ws = new WebSocket(HOST);
-      let el;
-
-      ws.onmessage = (event) => {
-        console.log(event.data);
-      };
-    </script>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
     <link rel="stylesheet" href="dist/style.css">
     <link rel="stylesheet" href="src/fa.min.css">
   </head>
-  <body class="bg-gradient-to-br bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-400 to-indigo-500 flex flex-col items-center justify-center w-screen min-h-screen bg-gray-100 text-gray-800 p-10">
+  <body class="bg-gradient-to-br bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-400 to-indigo-500 flex flex-col items-center justify-center w-screen min-h-screen bg-gray-100 text-gray-800 p-4 md:p-10">
 
-    <div class="flex flex-col flex-grow w-full max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
-      <div class="bg-gray-300 p-4 flex gap-4">
-        <h2 class="my-auto text-lg font-bold align-middle flex-grow text-gray-700">My Excellent Chat</h2>
-        <button class="bg-gray-200 hover:bg-white rounded-full aspect-square flex-shrink-0 w-10">
-          <i class="fa-solid fa-user-gear"></i>
-        </button>
+    <div class="flex flex-col flex-grow w-full md:max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
+
+      <div class="bg-gray-700 text-white p-4 flex gap-4">
+        <h2 class="my-auto text-lg font-bold text-center flex-grow">My Excellent Chat 🤠</h2>
       </div>
 
       <div class="flex flex-col flex-grow p-4 overflow-auto">
@@ -28,20 +22,21 @@
         <div class="flex w-full mt-2 gap-3 max-w-xs">
           <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200"></div>
           <div>
-            <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg">
-              <p class="text-sm">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. </p>
+            <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm flex flex-col gap-1">
+              <p class="font-semibold text-xs">AyloKieran</p>
+              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
             </div>
-            <span class="text-xs text-gray-400 leading-none">2 min ago</span>
+            <span class="text-xs text-gray-400 leading-none">12:54:32</span>
           </div>
         </div>
 
         <!-- Own Message -->
         <div class="flex w-full mt-2 gap-3 max-w-xs ml-auto justify-end">
           <div>
-            <div class="bg-indigo-600 text-white p-3 rounded-l-lg rounded-br-lg">
-              <p class="text-sm">Lorem ipsum dolor sit.</p>
+            <div class="bg-indigo-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm">
+              <p>Lorem ipsum dolor sit.</p>
             </div>
-            <span class="text-xs text-gray-400 leading-none">2 min ago</span>
+            <span class="text-xs text-gray-400 leading-none">12:55:43</span>
           </div>
           <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-200"></div>
         </div>
@@ -49,6 +44,9 @@
       </div>
 
       <div class="bg-gray-300 p-4 flex gap-4">
+        <button class="bg-gray-100 hover:bg-indigo-600 hover:text-white rounded-lg aspect-square flex-shrink-0 w-10">
+          <i class="fa-solid fa-user-gear"></i>
+        </button>
         <input class="flex items-center h-10 rounded px-3 text-sm flex-grow" type="text" placeholder="Type your message…">
         <button class="bg-gray-100 hover:bg-indigo-600 hover:text-white rounded-full aspect-square flex-shrink-0 w-10">
           <i class="fa-solid fa-paper-plane"></i>
@@ -56,6 +54,73 @@
       </div>
 
     </div>
+
+    <script>
+      let HOST = location.origin.replace(/^http/, 'ws')
+      let ws = new WebSocket(HOST);
+
+      let userID = null;
+
+      ws.onmessage = (event) => {
+        let parsedMessage = null;
+
+        try {
+          parsedMessage = JSON.parse(event.data);
+        } catch {
+          console.log("Invalid Message - Unparsable JSON");
+        }
+
+        if (parsedMessage != null) {
+          executeMessage(parsedMessage);
+        }
+      };
+
+      function executeMessage(message) {
+        let type = message.type || null,
+            data = message.data || null;
+
+        console.log(`${new Date().toLocaleString()} - New Message Received: ${JSON.stringify(message)}`);
+
+        switch(type) {
+          case 'joined':
+            userID = data.userID;
+            break;
+          case 'pong':
+            break;
+          default:
+            console.log("NOT IMPLEMENTED");
+            break;
+        }
+
+        function _sendMessage(message) {
+          client.send(message);
+
+          console.log(`${new Date()} - New Message Sent: ${message}`);
+        }
+      }
+
+      setInterval(() => {
+        ws.send('{"type": "ping"}');
+      }, 30000);
+
+      setTimeout(() => {
+        ws.send('{"type": "joining"}');
+
+      }, 200)
+
+      function sendMessage(message) {
+        ws.send(`{
+          "type": "message",
+            "data": {
+              "userID": "${userID}",
+              "userColour": "#123456",
+              "userName": "AyloKieran",
+              "message": "${message}",
+              "dateTime": "${new Date().toLocaleTimeString()}"
+            }
+          }`);
+      }
+    </script>
 
   </body>
 </html>
