@@ -45,12 +45,7 @@ function executeMessage(client, message) {
       _sendMessage('{"type": "pong"}');
       break;
     case 'joining':
-      _sendMessage(`{
-        "type": "joined", 
-        "data": { 
-          "userID": "${uuidv4()}"
-        }
-      }`);
+      _sendMessage(`{"type": "joined", "data": { "userID": "${uuidv4()}" } }`);
       break;
     case 'message': 
       _sendMessage(JSON.stringify(message), true);

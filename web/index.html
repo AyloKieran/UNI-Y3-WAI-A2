@@ -4,51 +4,49 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>WAI - Assignment 2</title>
     <link rel="stylesheet" href="dist/style.css">
     <link rel="stylesheet" href="src/fa.min.css">
   </head>
-  <body class="bg-gradient-to-br bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-400 to-indigo-500 flex flex-col items-center justify-center w-screen min-h-screen bg-gray-100 text-gray-800 p-4 md:p-10">
+  <body class="bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-indigo-400 to-indigo-500 flex flex-col items-center justify-center w-screen min-h-screen max-h-screen bg-gray-100 text-gray-800 p-4 md:p-10">
 
     <div class="flex flex-col flex-grow w-full md:max-w-xl bg-white shadow-xl rounded-lg overflow-hidden">
+
+        <dialog id="settingsModal" class="absoloute top-0 bottom-0 left-0 right-0 p-0 opacity-0 pointer-events-none open:pointer-events-auto open:opacity-100 open:bg-black/20 open:backdrop-blur-sm transition-all w-full h-full flex align-bottom justify-center" open>
+          <form method="dialog" class="rounded-lg w-full max-w-lg my-auto flex flex-col shadow-lg">
+            <div class="bg-gray-700 rounded-t-lg text-white py-2 px-4 flex justify-between">
+              <h2 class="text-white font-bold">User Settings</h2>
+              <button value="cancel">
+                <i class="fa fa-close"></i>
+              </button>
+            </div>
+            <div class="bg-white p-4 flex flex-col gap-2">
+              <label for="username" class="text-sm font-semibold ml-1">
+                Name
+                <input id="username" class="flex items-center h-10 rounded mt-1 -ml-1 px-3 text-sm flex-grow border-2 border-grey-600 w-full" type="text" placeholder="Enter your name...">
+              </label>
+            </div>
+            <div class="bg-gray-300 rounded-b-lg py-2 px-4 flex justify-end">
+              <button id="saveSettings" class="bg-gray-600 p-1 px-3 rounded text-white font-semibold">
+                Save
+                <i class="fa fa-save pl-2"></i>
+              </button>
+            </div>
+          </form>
+        </dialog>
 
       <div class="bg-gray-700 text-white p-4 flex gap-4">
         <h2 class="my-auto text-lg font-bold text-center flex-grow">My Excellent Chat 🤠</h2>
       </div>
 
-      <div class="flex flex-col flex-grow p-4 overflow-auto">
-
-        <!-- Others Message -->
-        <div class="flex w-full mt-2 gap-3 max-w-xs">
-          <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200"></div>
-          <div>
-            <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm flex flex-col gap-1">
-              <p class="font-semibold text-xs">AyloKieran</p>
-              <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-            </div>
-            <span class="text-xs text-gray-400 leading-none">12:54:32</span>
-          </div>
-        </div>
-
-        <!-- Own Message -->
-        <div class="flex w-full mt-2 gap-3 max-w-xs ml-auto justify-end">
-          <div>
-            <div class="bg-indigo-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm">
-              <p>Lorem ipsum dolor sit.</p>
-            </div>
-            <span class="text-xs text-gray-400 leading-none">12:55:43</span>
-          </div>
-          <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-200"></div>
-        </div>
-
-      </div>
+      <div id="messageLog" class="flex flex-col flex-grow p-4 overflow-auto"></div>
 
       <div class="bg-gray-300 p-4 flex gap-4">
-        <button class="bg-gray-100 hover:bg-indigo-600 hover:text-white rounded-lg aspect-square flex-shrink-0 w-10">
+        <button id="openSettings" class="bg-gray-100 hover:bg-indigo-600 hover:text-white rounded-lg aspect-square flex-shrink-0 w-10">
           <i class="fa-solid fa-user-gear"></i>
         </button>
-        <input class="flex items-center h-10 rounded px-3 text-sm flex-grow" type="text" placeholder="Type your message…">
-        <button class="bg-gray-100 hover:bg-indigo-600 hover:text-white rounded-full aspect-square flex-shrink-0 w-10">
+        <input id="message" class="flex items-center h-10 rounded px-3 text-sm flex-grow" type="text" placeholder="Type your message…" autofocus>
+        <button id="sendMessage" class="bg-gray-100 hover:bg-indigo-600 hover:text-white rounded-full aspect-square flex-shrink-0 w-10">
           <i class="fa-solid fa-paper-plane"></i>
         </button>
       </div>
@@ -60,6 +58,75 @@
       let ws = new WebSocket(HOST);
 
       let userID = null;
+      var username = "Anonymous";
+
+      let elements = {
+        settingsModal: document.getElementById("settingsModal"),
+        openSettings: document.getElementById("openSettings"),
+        saveSettings: document.getElementById("saveSettings"),
+        sendMessage: document.getElementById("sendMessage"),
+        messageLog: document.getElementById("messageLog"),
+        username: document.getElementById("username"),
+        message: document.getElementById("message")
+      };
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key == "Enter") {
+          if (settingsModal.open == true) {
+            _saveSettings();
+          } else {
+            _sendMessage();
+          }
+        }
+      });
+
+      elements.saveSettings.addEventListener("click", (event) => {
+        _saveSettings();
+      });
+
+      elements.sendMessage.addEventListener("click", () => {
+        _sendMessage();
+      });
+
+      elements.openSettings.addEventListener("click", () => {
+        elements.settingsModal.open = true;
+      });
+
+      function _saveSettings() {
+        username = elements.username.value;
+
+        if (username == "")
+        {
+          username = "Anonymous";
+        }
+
+        settingsModal.open = false;
+        message.focus();
+      }
+
+      function _sendMessage() {
+        if (elements.message.value.length || false) {
+          ws.send(`{
+            "type": "message",
+              "data": {
+                "userID": "${userID}",
+                "userName": "${username}",
+                "message": "${elements.message.value}",
+                "dateTime": "${new Date().toLocaleTimeString()}"
+              }
+            }`);
+
+          elements.message.value = "";
+        }
+      }
+
+      ws.onopen = (event) => {
+        ws.send('{"type": "joining"}');
+
+        var keepalive = setInterval(() => {
+          ws.send('{"type": "ping"}');
+        }, 30000);
+      }
 
       ws.onmessage = (event) => {
         let parsedMessage = null;
@@ -67,12 +134,16 @@
         try {
           parsedMessage = JSON.parse(event.data);
         } catch {
-          console.log("Invalid Message - Unparsable JSON");
+          console.error("Invalid Message - Unparsable JSON", event.data);
         }
 
         if (parsedMessage != null) {
           executeMessage(parsedMessage);
         }
+      };
+
+      ws.onclose = (event) => {
+        clearInterval(keepalive);
       };
 
       function executeMessage(message) {
@@ -87,39 +158,46 @@
             break;
           case 'pong':
             break;
+          case 'message':
+            _receiveMessage(data);
+            break;
           default:
             console.log("NOT IMPLEMENTED");
             break;
         }
+      }
 
-        function _sendMessage(message) {
-          client.send(message);
-
-          console.log(`${new Date()} - New Message Sent: ${message}`);
+      function _receiveMessage(message) {
+        if (message.userID == userID) {
+          htmlElement = `
+            <div class="flex w-full mt-2 gap-3 max-w-xs ml-auto justify-end">
+            <div>
+              <div class="bg-indigo-600 text-white p-3 rounded-l-lg rounded-br-lg text-sm">
+                <p>${message.message}</p>
+              </div>
+              <span class="text-xs text-gray-400 leading-none">${message.dateTime}</span>
+            </div>
+            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-indigo-200"></div>
+          </div>
+          `;
+        } else {
+          htmlElement = `
+            <div class="flex w-full mt-2 gap-3 max-w-xs">
+            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200"></div>
+            <div>
+              <div class="bg-gray-300 p-3 rounded-r-lg rounded-bl-lg text-sm flex flex-col gap-1">
+                <p class="font-semibold text-xs">${message.userName}</p>
+                <p>${message.message}</p>
+              </div>
+              <span class="text-xs text-gray-400 leading-none">${message.dateTime}</span>
+            </div>
+          </div>
+          `;
         }
-      }
 
-      setInterval(() => {
-        ws.send('{"type": "ping"}');
-      }, 30000);
-
-      setTimeout(() => {
-        ws.send('{"type": "joining"}');
-
-      }, 200)
-
-      function sendMessage(message) {
-        ws.send(`{
-          "type": "message",
-            "data": {
-              "userID": "${userID}",
-              "userColour": "#123456",
-              "userName": "AyloKieran",
-              "message": "${message}",
-              "dateTime": "${new Date().toLocaleTimeString()}"
-            }
-          }`);
-      }
+        elements.messageLog.insertAdjacentHTML('beforeend', htmlElement);
+        elements.messageLog.scrollTo(0, elements.messageLog.scrollHeight);
+      };
     </script>
 
   </body>
