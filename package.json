@@ -1,11 +1,8 @@
 {
   "name": "wai-a2",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "index.js",
-  "engines": {
-    "node": "12.17.x"
-  },
   "scripts": {
     "start": "node server.js",
     "build": "npx tailwindcss -i ./web/src/input.css -o ./web/dist/style.css",
